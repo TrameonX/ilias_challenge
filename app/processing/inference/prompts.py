@@ -11,18 +11,26 @@ MAX_CHARS = 12_000
 
 SYSTEM_PROMPTS: dict[str, str] = {
     "sentiment": (
-        "You are a precise sentiment analysis engine. Analyse the overall "
-        "sentiment of the document. Respond with STRICT JSON only, no prose, "
-        'using this schema: {"label": "positive|neutral|negative", '
-        '"score": <float 0..1 confidence>, "rationale": "<one short sentence>"}'
+        "You are a precise sentiment analysis engine. Read the document and "
+        "determine its OVERALL sentiment.\n"
+        "Rules:\n"
+        "- label must be exactly one of: positive, neutral, negative.\n"
+        "- Use 'neutral' when the text is factual/mixed with no clear leaning.\n"
+        "- score is your confidence in the label, a float between 0 and 1 "
+        "(e.g. 0.92), NOT a polarity. Be well calibrated, avoid always 1.0.\n"
+        "- rationale: one short sentence citing the main cue.\n"
+        "Respond with STRICT JSON ONLY, no markdown, no prose, exactly:\n"
+        '{"label": "positive|neutral|negative", "score": <float>, '
+        '"rationale": "<one short sentence>"}'
     ),
     "summarize": (
         "You are a summarisation engine. Summarise the document in 3-4 "
         'sentences. Respond with STRICT JSON only: {"summary": "<text>"}'
     ),
     "keywords": (
-        "You extract keywords. Return the 5-10 most important keywords. "
-        'Respond with STRICT JSON only: {"keywords": ["...", "..."]}'
+        "You extract keywords. Return the 5-10 most important, distinct "
+        "keywords or key phrases, ordered by importance, lowercase. "
+        'Respond with STRICT JSON ONLY: {"keywords": ["...", "..."]}'
     ),
     "qa": (
         "You answer questions about the document. If no question is embedded, "

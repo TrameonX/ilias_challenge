@@ -8,4 +8,5 @@ pypdf>=4.0
 gradio>=4.0
 requests>=2.31
 # Providers de modèle (optionnels selon MODEL_PROVIDER) :
-anthr
+anthropic>=0.39
+openai>=1.30
