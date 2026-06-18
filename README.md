@@ -90,6 +90,26 @@ python -m ui.gradio_app
 > redonne la nouvelle URL quand il relance. Pour développer une couche en isolation,
 > chacun peut toujours retomber sur `MODEL_PROVIDER=mock` + `API_URL=http://localhost:8000`.
 
+## Docker (stack complète en une commande)
+
+Containerise le backend + le frontend. Idéal pour le distanciel et le déploiement
+gratuit (HF Spaces, Render, Fly.io...).
+
+```bash
+# Mode démo (mock, sans clé) :
+docker compose up --build
+
+# Avec le vrai modèle :
+MODEL_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... docker compose up --build
+```
+
+- API → http://localhost:8000  (docs : /docs)
+- UI  → http://localhost:7860
+
+L'UI joint l'API par le réseau interne Docker (`API_URL=http://api:8000`), pas par
+localhost. Pour exposer la démo à l'extérieur, ajouter un tunnel sur le port 7860
+(`ngrok http 7860`) ou pousser l'image sur Hugging Face Spaces (SDK Docker).
+
 ## Tests
 
 ```bash
