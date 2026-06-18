@@ -104,5 +104,6 @@ with gr.Blocks(theme=gr.Theme.from_hub("hmb/vaporwave")) as demo:
 if __name__ == "__main__":
     demo.launch(
         server_name=os.getenv("UI_HOST", "0.0.0.0"),
-        server_port=int(os.getenv("UI_PORT", "7860")),
+        server_port=int(os.getenv("PORT", os.getenv("UI_PORT", "7860"))),
+        share=os.getenv("GRADIO_SHARE", "false").lower() == "true",
     )

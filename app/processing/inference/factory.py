@@ -13,6 +13,7 @@ from app.processing.inference.mock_client import MockClient
 _REGISTRY = {
     "anthropic": "app.processing.inference.anthropic_client.AnthropicClient",
     "openai": "app.processing.inference.openai_client.OpenAIClient",
+    "groq": "app.processing.inference.groq_client.GroqClient",
     "mock": "app.processing.inference.mock_client.MockClient",
 }
 
