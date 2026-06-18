@@ -4,9 +4,9 @@ from models import UploadResponse, ResultResponse, PITask, DummyAIModel
 from storage import JobRepository
 from services import FileProcessingService
 
+
 router = APIRouter(tags=["AI Pipeline"])
 
-# Singletons partagés — instanciés une fois au démarrage de l'app
 _repository = JobRepository()
 _service = FileProcessingService(ai_model=DummyAIModel(), repository=_repository)
 
@@ -22,17 +22,13 @@ async def upload_file(
     question: Optional[str] = Form(None),
     service: FileProcessingService = Depends(get_service),
 ):
-    # 1. Validation immédiate
     service.validate_file(file)
 
-    # 2. Création du job
     job_id = service.create_job()
 
-    # 3. Lecture du fichier
     file_content = await file.read()
     content_type = file.content_type
 
-    # 4. Pipeline en arrière-plan (non-bloquant)
     background_tasks.add_task(
         service.process_pipeline,
         job_id=job_id,
@@ -42,7 +38,6 @@ async def upload_file(
         question=question,
     )
 
-    # 5. Réponse immédiate
     return UploadResponse(job_id=job_id, status=service.get_job_status(job_id).status)
 
 

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from controllers import router as ai_pipeline_router
 
+
 app = FastAPI(title="AI File Processing Platform")
 
 app.include_router(ai_pipeline_router)

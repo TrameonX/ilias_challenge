@@ -49,19 +49,16 @@ class FileProcessingService:
         try:
             self.repository.set_running(job_id)
 
-            # Étape 1 : Preprocessing — détection PDF par signature magique
             if content_type == "application/pdf" or file_content[:4] == b"%PDF":
                 text_content = self._extract_pdf(file_content)
             else:
                 text_content = file_content.decode("utf-8", errors="replace")
 
-            await asyncio.sleep(1)  # Simulation preprocessing (non-bloquant)
+            await asyncio.sleep(1)
 
-            # Étape 2 : Inference
-            await asyncio.sleep(2)  # Simulation charge IA (non-bloquant)
+            await asyncio.sleep(2)
             ai_insights = self.ai_model.run_inference(task, text_content, question)
 
-            # Étape 3 : Storage
             self.repository.set_completed(job_id, ai_insights)
 
         except Exception as e:
