@@ -43,7 +43,7 @@ def traiter_le_fichier(file, progress=gr.Progress()):
         compteur += 1
         
         try:
-            status_response = requests.get(f"{API_URL}/jobs/{job_id}")
+            status_response = requests.get(f"{API_URL}/status/{job_id}")
             if status_response.status_code != 200:
                 return "Erreur Statut", f"Impossible de récupérer le job {job_id}"
                 
