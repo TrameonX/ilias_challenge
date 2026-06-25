@@ -3,7 +3,7 @@ version: '3.8'
 services:
   api:
     build:
-      context: .
+      context: .\
       dockerfile: Dockerfile
     container_name: ai_pipeline_api
     ports:
@@ -12,4 +12,20 @@ services:
       - .:/app
     environment:
       - ENV=development
+    restart: always
+
+  gradio-ui:
+    image: python:3.11-slim
+    container_name: ai_pipeline_ui
+    ports:
+      - "7860:7860"
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - API_URL=http://api:8000
+    command: >
+      sh -c "pip install --no-cache-dir gradio requests && python app.py"
+    depends_on:
+      - api
     restart: always
