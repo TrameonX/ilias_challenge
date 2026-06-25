@@ -57,7 +57,9 @@ class DummyAIModel(AbstractAIModel):
 
 
 class OllamaAIModel(AbstractAIModel):
-    def __init__(self, model: str = "llama3.2:latest", base_url: str = "http://localhost:11434"):
+    def __init__(self, model: str = "llama3.2:latest", base_url: str = None):
+        import os
+        base_url = base_url or os.getenv("OLLAMA_URL", "http://localhost:11434")
         self.model = model
         self.base_url = base_url
 
