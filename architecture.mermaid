@@ -1,41 +1,45 @@
 flowchart TB
-    subgraph UI["UI Layer — Gradio"]
-        G["Gradio app<br/>upload widget + status<br/>polling toutes les 2s"]
+    subgraph UI["UI Layer — Gradio (Julie)"]
+        G["UI_July/app.py<br/>upload + choix tâche<br/>polling /result toutes les 2s"]
     end
 
-    subgraph API["API Layer — FastAPI"]
-        U["POST /upload<br/>valide + renvoie job_id (202)"]
-        R["GET /result/{job_id}<br/>status + insights"]
+    subgraph API["API Layer — FastAPI (Mathieu)"]
+        U["POST /upload<br/>file + task → renvoie job_id"]
+        R["GET /result/{job_id}<br/>status + result"]
     end
 
-    subgraph SVC["Service Layer"]
-        JS["JobService<br/>orchestration du pipeline<br/>gestion des erreurs"]
+    subgraph SVC["Service Layer (Mathieu)"]
+        JS["FileProcessingService<br/>orchestration + gestion d'erreur<br/>(corrompu/échec → FAILED)"]
     end
 
     subgraph PROC["Processing Layer"]
-        V["Validation<br/>type + taille"]
-        P["Preprocessing<br/>TXT / PDF -> texte"]
-        subgraph INF["Inference (swappable)"]
+        V["Validation<br/>type TXT/PDF + taille ≤ 5 MB"]
+        P["Preprocessing<br/>extraction texte PDF / TXT"]
+        subgraph INF["Inference — swappable"]
+            ADP["ai_adapter.RealAIModel<br/>(implémente AbstractAIModel)"]
+            FAC["factory.get_model_client()<br/>via MODEL_PROVIDER"]
             BASE["ModelClient (interface)"]
             ANTH["AnthropicClient"]
             OAI["OpenAIClient"]
             MOCK["MockClient"]
-            FAC["factory.get_model_client()"]
         end
     end
 
-    subgraph STORE["Storage Layer"]
-        DB["InMemoryJobStore<br/>(swappable: Redis/SQL)"]
+    subgraph STORE["Storage Layer (Mathieu)"]
+        DB["JobRepository<br/>in-memory (swappable: Redis/SQL)"]
     end
 
-    G -- "HTTP" --> U
-    G -- "HTTP poll" --> R
+    G -- "HTTP POST" --> U
+    G -- "HTTP poll 2s" --> R
     U --> JS
     R --> DB
-    JS --> V --> P --> FAC
-    FAC --> BASE
+    JS --> V --> P --> ADP
+    ADP --> FAC --> BASE
     BASE -.-> ANTH
     BASE -.-> OAI
     BASE -.-> MOCK
-    FAC --> JS
+    ADP --> JS
     JS --> DB
+
+    classDef steph fill:#e8f0ff,stroke:#3b6fd6,stroke-width:1px;
+    class ADP,FAC,BASE,ANTH,OAI,MOCK steph;

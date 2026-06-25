@@ -94,4 +94,8 @@ def build_ui() -> gr.Blocks:
 
 
 if __name__ == "__main__":
-    build_ui().launch()
+    # server_name=0.0.0.0 -> accessible depuis l'extérieur du conteneur Docker.
+    build_ui().launch(
+        server_name=os.getenv("UI_HOST", "0.0.0.0"),
+        server_port=int(os.getenv("UI_PORT", "7860")),
+    )

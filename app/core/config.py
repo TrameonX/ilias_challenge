@@ -18,7 +18,7 @@ class Settings:
     # --- Choix du modèle (swappabilité) ---
     # Valeurs possibles : "anthropic", "openai", "mock"
     model_provider: str = os.getenv("MODEL_PROVIDER", "anthropic")
-    model_name: str = os.getenv("MODEL_NAME", "claude-3-5-haiku-latest")
+    model_name: str = os.getenv("MODEL_NAME", "claude-haiku-4-5-20251001")
 
     # --- Tâche IA par défaut ---
     # "sentiment" | "summarize" | "keywords" | "qa"
@@ -27,6 +27,7 @@ class Settings:
     # --- Clés API ---
     anthropic_api_key: str | None = os.getenv("ANTHROPIC_API_KEY")
     openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
+    groq_api_key: str | None = os.getenv("GROQ_API_KEY")
 
     @property
     def max_file_size_bytes(self) -> int:

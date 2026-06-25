@@ -1,0 +1,27 @@
+# Lance toute la stack en une commande :  docker compose up --build
+# - api : backend FastAPI sur :8000
+# - ui  : frontend Gradio sur :7860, branché sur l'api via le réseau interne
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PROVIDER=${MODEL_PROVIDER:-mock}
+      - MODEL_NAME=${MODEL_NAME:-claude-3-5-haiku-latest}
+      - AI_TASK=${AI_TASK:-sentiment}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  ui:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      # L'UI joint l'API par le nom de service Docker, pas par localhost.
+      - API_URL=http://api:8000
+      - UI_PORT=7860
+    command: python -m ui.gradio_app
+    depends_on:
+      - api

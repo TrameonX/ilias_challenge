@@ -1,0 +1,12 @@
+.git
+.git_trash_*
+ilias_challenge
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+flagged/
+*.md
+tests/
