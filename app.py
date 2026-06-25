@@ -4,7 +4,7 @@ import time
 import os
 import mimetypes
 
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 def formater_resultat(result: dict) -> str:
     if not result:
@@ -80,4 +80,4 @@ with gr.Blocks(theme=gr.Theme.from_hub("hmb/vaporwave")) as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(share=True)
+    demo.launch(server_name="0.0.0.0", server_port=7860)
