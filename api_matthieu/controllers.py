@@ -1,6 +1,6 @@
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, Depends
-from models import UploadResponse, ResultResponse, PITask, DummyAIModel, AbstractAIModel
+from models import UploadResponse, ResultResponse, PITask, DummyAIModel, AbstractAIModel, HuggingFaceModel
 from storage import JobRepository
 from services import FileProcessingService
 import os
@@ -21,10 +21,11 @@ def _build_ai_model() -> AbstractAIModel:
     model_name = os.getenv("AI_MODEL", "dummy").lower()
     if model_name == "dummy":
         return DummyAIModel()
-    # Exemple pour brancher un vrai modèle :
-    # elif model_name == "openai":
-    #     from models import OpenAIModel
-    #     return OpenAIModel(api_key=os.getenv("OPENAI_API_KEY"))
+    elif model_name == "huggingface":
+        return HuggingFaceModel(
+            api_key=os.getenv("HF_API_KEY"),
+            model_id=os.getenv("HF_MODEL_ID")
+        )
     raise ValueError(f"Modèle IA inconnu : '{model_name}'. Vérifiez la variable AI_MODEL.")
 
 

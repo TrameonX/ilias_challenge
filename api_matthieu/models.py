@@ -1,6 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel
 from typing import Optional
+import requests as http
 from abc import ABC, abstractmethod
 
 
@@ -54,3 +55,33 @@ class DummyAIModel(AbstractAIModel):
             }
 
         raise ValueError("Tâche non supportée par le modèle d'inférence.")
+    
+
+class HuggingFaceModel(AbstractAIModel):
+    def __init__(self, api_key: str, model_id: str):
+        self.api_key = api_key
+        self.model_id = model_id
+        self.base_url = f"https://api-inference.huggingface.co/models/{model_id}"
+        self.headers = {"Authorization": f"Bearer {api_key}"}
+
+    def run_inference(self, task: PITask, content: str, question: Optional[str] = None) -> dict:
+        if task == PITask.SUMMARIZE:
+            payload = {"inputs": content[:1024]}  # HF a une limite de tokens
+            response = http.post(self.base_url, headers=self.headers, json=payload)
+            response.raise_for_status()
+            return {"summary": response.json()[0]["summary_text"]}
+
+        elif task == PITask.SENTIMENT:
+            payload = {"inputs": content[:512]}
+            response = http.post(self.base_url, headers=self.headers, json=payload)
+            response.raise_for_status()
+            result = response.json()[0][0]
+            return {"sentiment": result["label"], "score": round(result["score"], 2)}
+
+        elif task == PITask.QA:
+            payload = {"inputs": {"question": question, "context": content[:2048]}}
+            response = http.post(self.base_url, headers=self.headers, json=payload)
+            response.raise_for_status()
+            return {"question": question, "answer": response.json()["answer"]}
+
+        raise ValueError(f"Tâche non supportée : {task}")

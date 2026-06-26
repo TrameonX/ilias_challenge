@@ -12,7 +12,9 @@ services:
       - .:/app
     environment:
       - ENV=development
-      - AI_MODEL=dummy
+      - AI_MODEL=huggingface
+      - HF_API_KEY=hf_xxxxxxxxxxxxxxxx  # ton token HF
+      - HF_MODEL_ID=facebook/bart-large-cnn 
     restart: always
 
   gradio-ui:
