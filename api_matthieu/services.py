@@ -13,7 +13,12 @@ class FileProcessingService:
         self.ai_model = ai_model
         self.repository = repository
 
-    def validate_file(self, file: UploadFile):
+    def validate_file(self, file: UploadFile, file_content: bytes):
+        """
+        FIX : La validation reçoit maintenant les bytes déjà lus pour mesurer
+        la taille de manière fiable. L'approche seek/tell sur un fichier streamé
+        pouvait retourner 0 et laisser passer des fichiers trop lourds.
+        """
         allowed_extensions = ["txt", "pdf"]
         allowed_content_types = ["text/plain", "application/pdf"]
 
@@ -26,11 +31,7 @@ class FileProcessingService:
             )
 
         MAX_FILE_SIZE = 5 * 1024 * 1024
-        file.file.seek(0, 2)
-        file_size = file.file.tell()
-        file.file.seek(0)
-
-        if file_size > MAX_FILE_SIZE:
+        if len(file_content) > MAX_FILE_SIZE:
             raise HTTPException(status_code=400, detail="Le fichier dépasse la taille maximale de 5 Mo.")
 
     def create_job(self) -> str:
@@ -54,9 +55,10 @@ class FileProcessingService:
             else:
                 text_content = file_content.decode("utf-8", errors="replace")
 
+            # FIX : les deux asyncio.sleep() redondants ont été fusionnés en un seul.
+            # Ils simulaient artificiellement un délai de traitement sans raison documentée.
             await asyncio.sleep(1)
 
-            await asyncio.sleep(2)
             ai_insights = self.ai_model.run_inference(task, text_content, question)
 
             self.repository.set_completed(job_id, ai_insights)

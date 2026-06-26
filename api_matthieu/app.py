@@ -39,11 +39,13 @@ def traiter_le_fichier(file, progress=gr.Progress()):
 
     compteur = 0
     while True:
-        time.sleep(1)
+        # FIX : poll toutes les 2 secondes comme demandé dans l'énoncé (était 1s)
+        time.sleep(2)
         compteur += 1
         
         try:
-            status_response = requests.get(f"{API_URL}/status/{job_id}")
+            # FIX : le bon endpoint est /result/{job_id}, pas /status/{job_id}
+            status_response = requests.get(f"{API_URL}/result/{job_id}")
             if status_response.status_code != 200:
                 return "Erreur Statut", f"Impossible de récupérer le job {job_id}"
                 
@@ -66,7 +68,7 @@ def traiter_le_fichier(file, progress=gr.Progress()):
             return "Connexion perdue", f"La connexion avec l'API a été coupée durant l'analyse : {e}"
             
         if compteur > 30:
-            return "Timeout", "Le traitement a pris trop de temps (Max 30s)."
+            return "Timeout", "Le traitement a pris trop de temps (Max 60s)."
 
 
 with gr.Blocks(theme=gr.Theme.from_hub("hmb/vaporwave")) as demo:
@@ -83,7 +85,7 @@ with gr.Blocks(theme=gr.Theme.from_hub("hmb/vaporwave")) as demo:
     
     file_input.upload(
         fn=traiter_le_fichier, 
-        inputs=[file_input], \
+        inputs=[file_input],
         outputs=[status_output, result_output]
     )
 

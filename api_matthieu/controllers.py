@@ -1,14 +1,34 @@
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, Depends
-from models import UploadResponse, ResultResponse, PITask, DummyAIModel
+from models import UploadResponse, ResultResponse, PITask, DummyAIModel, AbstractAIModel
 from storage import JobRepository
 from services import FileProcessingService
+import os
 
 
 router = APIRouter(tags=["AI Pipeline"])
 
 _repository = JobRepository()
-_service = FileProcessingService(ai_model=DummyAIModel(), repository=_repository)
+
+
+def _build_ai_model() -> AbstractAIModel:
+    """
+    FIX : Le modèle IA est maintenant sélectionnable via la variable d'environnement
+    AI_MODEL. Remplacer le modèle ne nécessite plus de toucher au code — il suffit
+    de brancher une nouvelle classe qui hérite d'AbstractAIModel et de l'enregistrer ici.
+    Valeurs supportées : "dummy" (défaut). Ajouter d'autres cas selon les modèles réels.
+    """
+    model_name = os.getenv("AI_MODEL", "dummy").lower()
+    if model_name == "dummy":
+        return DummyAIModel()
+    # Exemple pour brancher un vrai modèle :
+    # elif model_name == "openai":
+    #     from models import OpenAIModel
+    #     return OpenAIModel(api_key=os.getenv("OPENAI_API_KEY"))
+    raise ValueError(f"Modèle IA inconnu : '{model_name}'. Vérifiez la variable AI_MODEL.")
+
+
+_service = FileProcessingService(ai_model=_build_ai_model(), repository=_repository)
 
 def get_service() -> FileProcessingService:
     return _service
@@ -22,12 +42,14 @@ async def upload_file(
     question: Optional[str] = Form(None),
     service: FileProcessingService = Depends(get_service),
 ):
-    service.validate_file(file)
-
-    job_id = service.create_job()
-
+    # FIX : le fichier est lu une seule fois ici, avant la validation.
+    # Cela évite le double seek et garantit une mesure de taille fiable.
     file_content = await file.read()
     content_type = file.content_type
+
+    service.validate_file(file, file_content)
+
+    job_id = service.create_job()
 
     background_tasks.add_task(
         service.process_pipeline,
