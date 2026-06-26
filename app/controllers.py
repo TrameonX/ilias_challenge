@@ -1,16 +1,14 @@
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, Depends
-from models import UploadResponse, ResultResponse, PITask, DummyAIModel
-from storage import JobRepository
-from services import FileProcessingService
-from ai_adapter import RealAIModel
+from API.models import UploadResponse, ResultResponse, PITask, OllamaAIModel
+from API.storage import JobRepository
+from API.services import FileProcessingService
 
 
 router = APIRouter(tags=["AI Pipeline"])
 
 _repository = JobRepository()
-# Seule ligne changée vs la version de Mathieu : DummyAIModel() -> RealAIModel()
-_service = FileProcessingService(ai_model=RealAIModel(), repository=_repository)
+_service = FileProcessingService(ai_model=OllamaAIModel(), repository=_repository)
 
 def get_service() -> FileProcessingService:
     return _service

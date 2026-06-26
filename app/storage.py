@@ -1,6 +1,6 @@
 from typing import Dict
 from fastapi import HTTPException
-from models import JobStatus, ResultResponse
+from API.models import JobStatus, ResultResponse
 
 
 class JobRepository:

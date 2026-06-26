@@ -1,17 +1,14 @@
-# Lance toute la stack en une commande :  docker compose up --build
-# - api : backend FastAPI sur :8000
-# - ui  : frontend Gradio sur :7860, branché sur l'api via le réseau interne
+# Lance toute la stack : docker compose up --build
+# Ollama doit tourner en local sur le port 11434 (ollama serve)
 services:
   api:
     build: .
     ports:
       - "8000:8000"
     environment:
-      - MODEL_PROVIDER=${MODEL_PROVIDER:-mock}
-      - MODEL_NAME=${MODEL_NAME:-claude-3-5-haiku-latest}
-      - AI_TASK=${AI_TASK:-sentiment}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OLLAMA_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   ui:
@@ -19,9 +16,7 @@ services:
     ports:
       - "7860:7860"
     environment:
-      # L'UI joint l'API par le nom de service Docker, pas par localhost.
       - API_URL=http://api:8000
-      - UI_PORT=7860
-    command: python -m ui.gradio_app
+    command: python ui/app.py
     depends_on:
       - api

@@ -1,36 +1,32 @@
-"""Tests de la couche IA : swappabilité + tâches (mock, sans clé)."""
-from __future__ import annotations
-
-from app.processing.inference.factory import get_model_client
-from app.processing.inference.mock_client import MockClient
+"""Tests de la couche modèle avec DummyAIModel (sans Ollama, sans clé API)."""
+from API.models import DummyAIModel, PITask
 
 
-def test_factory_returns_mock():
-    client = get_model_client("mock")
-    assert isinstance(client, MockClient)
-    assert client.name == "mock"
+def test_dummy_sentiment():
+    result = DummyAIModel().run_inference(PITask.SENTIMENT, "Texte de test positif")
+    assert "sentiment" in result
+    assert "score" in result
+    assert 0.0 <= result["score"] <= 1.0
 
 
-def test_factory_falls_back_to_mock_without_key():
-    # Provider réel demandé mais aucune clé -> fallback robuste sur mock.
-    client = get_model_client("anthropic")
-    assert client.name == "mock"
+def test_dummy_summarize():
+    result = DummyAIModel().run_inference(PITask.SUMMARIZE, "Texte à résumer pour le test")
+    assert "summary" in result
+    assert isinstance(result["summary"], str)
 
 
-def test_sentiment_positive():
-    res = MockClient().infer("This is great, I love it. Excellent!", "sentiment")
-    assert res["label"] == "positive"
-    assert 0.0 <= res["score"] <= 1.0
+def test_dummy_keywords():
+    result = DummyAIModel().run_inference(PITask.KEYWORDS, "pipeline inference model storage")
+    assert "keywords" in result
+    assert isinstance(result["keywords"], list)
+    assert len(result["keywords"]) > 0
 
 
-def test_sentiment_negative():
-    res = MockClient().infer("Terrible, awful, the worst. I hate this.", "sentiment")
-    assert res["label"] == "negative"
-
-
-def test_keywords_task():
-    text = "Pipeline pipeline inference inference inference model storage storage"
-    res = MockClient().infer(text, "keywords")
-    assert "keywords" in res
-    assert "inference" in res["keywords"]  # mot le plus fréquent
-    assert "model" in res["keywords"]
+def test_dummy_qa():
+    result = DummyAIModel().run_inference(
+        PITask.QA,
+        "Le projet traite des fichiers texte et PDF.",
+        question="Quel est le sujet ?"
+    )
+    assert "question" in result
+    assert "answer" in result

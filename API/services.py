@@ -3,8 +3,8 @@ import asyncio
 import io
 from typing import Optional
 from fastapi import HTTPException, UploadFile
-from models import JobStatus, ResultResponse, AbstractAIModel, PITask
-from storage import JobRepository
+from API.models import JobStatus, ResultResponse, AbstractAIModel, PITask
+from API.storage import JobRepository
 
 
 class FileProcessingService:
