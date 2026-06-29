@@ -20,10 +20,6 @@ def _get_mongo_client():
         return None
 
 
-# ---------------------------------------------------------------------------
-# JobRepository — stockage en mémoire des statuts de jobs (inchangé)
-# En production : remplacer le dict par une collection MongoDB ici.
-# ---------------------------------------------------------------------------
 class JobRepository:
     """
     Couche Storage des statuts de jobs.
@@ -31,7 +27,7 @@ class JobRepository:
     """
 
     def __init__(self):
-        self._store: Dict[str, ResultResponse] = {}
+        self._store: Dict[str, ResultResponse] = {} # <----- Changer ici par collection MongoDB 
 
     def create(self, job_id: str) -> ResultResponse:
         job = ResultResponse(job_id=job_id, status=JobStatus.PENDING)
