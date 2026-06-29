@@ -8,7 +8,7 @@ from API.services import FileProcessingService
 router = APIRouter(tags=["AI Pipeline"])
 
 _repository = JobRepository()
-_service = FileProcessingService(ai_model=OllamaAIModel(), repository=_repository)
+_service = FileProcessingService(ai_model=OllamaAIModel(model="llama3.2:latest"), repository=_repository)
 
 def get_service() -> FileProcessingService:
     return _service
