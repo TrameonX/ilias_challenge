@@ -4,7 +4,7 @@ import io
 from typing import Optional
 from fastapi import HTTPException, UploadFile
 from API.models import JobStatus, ResultResponse, AbstractAIModel, PITask
-from API.storage import JobRepository
+from API.storage import JobRepository, DocumentRepository
 
 
 class FileProcessingService:
@@ -12,6 +12,7 @@ class FileProcessingService:
     def __init__(self, ai_model: AbstractAIModel, repository: JobRepository):
         self.ai_model = ai_model
         self.repository = repository
+        self.doc_repository = DocumentRepository()
 
     def validate_file(self, file: UploadFile):
         allowed_extensions = ["txt", "pdf"]
@@ -44,11 +45,32 @@ class FileProcessingService:
         file_content: bytes,
         content_type: str,
         task: PITask,
+        filename: str = "upload",
         question: Optional[str] = None,
     ):
         try:
             self.repository.set_running(job_id)
 
+            # ----------------------------------------------------------------
+            # 1. Persistance MongoDB : on stocke le fichier brut AVANT tout
+            #    traitement IA. Ainsi le document est toujours récupérable,
+            #    même si l'inférence échoue par la suite.
+            # ----------------------------------------------------------------
+            try:
+                await self.doc_repository.save(
+                    job_id=job_id,
+                    filename=filename,
+                    content_type=content_type,
+                    raw_bytes=file_content,
+                )
+            except Exception as mongo_err:
+                # On logue l'erreur MongoDB mais on ne bloque PAS le pipeline :
+                # le traitement IA peut continuer même sans persistance.
+                print(f"[WARN] Impossible de persister le document en MongoDB : {mongo_err}")
+
+            # ----------------------------------------------------------------
+            # 2. Extraction du texte
+            # ----------------------------------------------------------------
             if content_type == "application/pdf" or file_content[:4] == b"%PDF":
                 text_content = self._extract_pdf(file_content)
             else:
@@ -56,6 +78,9 @@ class FileProcessingService:
 
             await asyncio.sleep(1)
 
+            # ----------------------------------------------------------------
+            # 3. Inférence IA
+            # ----------------------------------------------------------------
             await asyncio.sleep(2)
             ai_insights = self.ai_model.run_inference(task, text_content, question)
 

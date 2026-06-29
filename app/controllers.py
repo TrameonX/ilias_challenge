@@ -35,6 +35,7 @@ async def upload_file(
         file_content=file_content,
         content_type=content_type,
         task=task,
+        filename=file.filename or "upload",
         question=question,
     )
 

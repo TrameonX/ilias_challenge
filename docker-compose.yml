@@ -1,15 +1,34 @@
 # Lance toute la stack : docker compose up --build
 # Ollama doit tourner en local sur le port 11434 (ollama serve)
 services:
+
+  mongo:
+    image: mongodb/mongodb-atlas-local
+    container_name: ai_platform_mongo
+    # restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=user
+      - MONGODB_INITDB_ROOT_PASSWORD=pass
+    # volumes:
+    #   - mongo_data:/data/db
+    #   - mongo_config:/data/configdb
+
+
   api:
     build: .
     ports:
       - "8000:8000"
     environment:
       - OLLAMA_URL=http://host.docker.internal:11434
+      - MONGO_URL=mongodb://mongo:27017
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   ui:
     build: .
@@ -20,3 +39,7 @@ services:
     command: python ui/app.py
     depends_on:
       - api
+
+volumes:
+  mongo_data:
+  mongo_config:

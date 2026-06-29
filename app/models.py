@@ -30,6 +30,16 @@ class ResultResponse(BaseModel):
     error: Optional[str] = None
 
 
+class StoredDocument(BaseModel):
+    """Métadonnées d'un document persisté en MongoDB."""
+    document_id: str
+    job_id: str
+    filename: str
+    content_type: str
+    size_bytes: int
+    gridfs_id: Optional[str] = None  # ObjectId GridFS stringifié
+
+
 class AbstractAIModel(ABC):
     @abstractmethod
     def run_inference(self, task: PITask, content: str, question: Optional[str] = None) -> dict:

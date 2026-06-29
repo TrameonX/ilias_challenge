@@ -7,6 +7,9 @@ pydantic>=2.6
 pypdf>=4.0
 gradio>=4.0
 requests>=2.31
+# Driver MongoDB async
+motor>=3.3
+pymongo>=4.6
 # Providers de modèle (optionnels selon MODEL_PROVIDER) :
 anthropic>=0.39
 openai>=1.30
