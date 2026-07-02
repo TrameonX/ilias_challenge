@@ -1,0 +1,52 @@
+# Lance toute la stack : docker compose up --build
+# Ollama doit tourner en local sur le port 11434 (ollama serve)
+services:
+
+  mongo:
+    image: mongodb/mongodb-atlas-local
+    container_name: ai_platform_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=user
+      - MONGODB_INITDB_ROOT_PASSWORD=pass
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    # NB : l'image mongodb-atlas-local embarque déjà un healthcheck interne
+    # (mongod + mongot), inutile d'en redéfinir un ici : depends_on/service_healthy
+    # s'appuie dessus automatiquement.
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      # Auth requise car MONGODB_INITDB_ROOT_USERNAME/PASSWORD sont définis ci-dessus.
+      # directConnection=true : l'image Atlas Local tourne comme un replica set
+      # à un seul noeud, mais n'est pas "découvrable" depuis un autre conteneur
+      # (le nom d'hôte annoncé par le replica set n'est pas "mongo"). On force
+      # donc une connexion directe au membre unique.
+      - MONGO_URL=mongodb://user:pass@mongo:27017/?authSource=admin&directConnection=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  ui:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      - API_URL=http://api:8000
+    command: python ui/app.py
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
+  mongo_config:
